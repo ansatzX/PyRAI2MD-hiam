@@ -98,7 +98,7 @@ class MLP:
             self.select_eg_out = np.arange(self.nstate)
 
         if 0 < len(variables['select_nac_out']) < self.nnac:
-            self.select_eg_out = variables['select_nac_out']
+            self.select_nac_out = variables['select_nac_out']
         else:
             self.select_nac_out = np.arange(self.nnac)
 
@@ -627,8 +627,14 @@ class MLP:
 
             traj.energy = np.copy(energy)[self.select_eg_out]
             traj.grad = np.copy(gradient)[self.select_eg_out]
-            traj.nac = np.copy(nac)[self.select_nac_out]
-            traj.soc = np.copy(soc)[self.select_soc_out]
+            if len(nac) > 0:
+                traj.nac = np.copy(nac)[self.select_nac_out]
+            else:
+                traj.nac = np.array([])
+            if len(soc) > 0:
+                traj.soc = np.copy(soc)[self.select_soc_out]
+            else:
+                traj.soc = np.array([])
             traj.err_energy = err_energy
             traj.err_grad = err_grad
             traj.err_nac = err_nac
@@ -708,12 +714,12 @@ class Schnet:
             self.select_eg_out = np.arange(self.nstate)
 
         if 0 < len(variables['select_nac_out']) < self.nnac:
-            self.select_eg_out = variables['select__out']
+            self.select_nac_out = variables['select_nac_out']
         else:
             self.select_nac_out = np.arange(self.nnac)
 
-        if 0 < len(variables['select_eg_out']) < self.nsoc:
-            self.select_soc_out = variables['select_eg_out']
+        if 0 < len(variables['select_soc_out']) < self.nsoc:
+            self.select_soc_out = variables['select_soc_out']
         else:
             self.select_soc_out = np.arange(self.nsoc)
 
@@ -1231,8 +1237,14 @@ class Schnet:
 
             traj.energy = np.copy(energy)[self.select_eg_out]
             traj.grad = np.copy(gradient)[self.select_eg_out]
-            traj.nac = np.copy(nac)[self.select_nac_out]
-            traj.soc = np.copy(soc)[self.select_soc_out]
+            if len(nac) > 0:
+                traj.nac = np.copy(nac)[self.select_nac_out]
+            else:
+                traj.nac = np.array([])
+            if len(soc) > 0:
+                traj.soc = np.copy(soc)[self.select_soc_out]
+            else:
+                traj.soc = np.array([])
             traj.err_energy = err_energy
             traj.err_grad = err_grad
             traj.err_nac = err_nac

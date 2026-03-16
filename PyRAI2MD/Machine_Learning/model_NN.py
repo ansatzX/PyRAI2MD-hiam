@@ -94,7 +94,7 @@ class DNN:
             self.select_eg_out = np.arange(self.nstate)
 
         if 0 < len(variables['select_nac_out']) < self.nnac:
-            self.select_eg_out = variables['select_nac_out']
+            self.select_nac_out = variables['select_nac_out']
         else:
             self.select_nac_out = np.arange(self.nnac)
 
@@ -496,8 +496,14 @@ class DNN:
                 energy, gradient, nac, soc, err_energy, err_grad, err_nac, err_soc = self._high_mid_low(traj)
             traj.energy = np.copy(energy)[self.select_eg_out]
             traj.grad = np.copy(gradient)[self.select_eg_out]
-            traj.nac = np.copy(nac)[self.select_nac_out]
-            traj.soc = np.copy(soc)[self.select_soc_out]
+            if len(nac) > 0:
+                traj.nac = np.copy(nac)[self.select_nac_out]
+            else:
+                traj.nac = np.array([])
+            if len(soc) > 0:
+                traj.soc = np.copy(soc)[self.select_soc_out]
+            else:
+                traj.soc = np.array([])
             traj.err_energy = err_energy
             traj.err_grad = err_grad
             traj.err_nac = err_nac

@@ -552,8 +552,14 @@ class E2N2Demo:
 
             traj.energy = np.copy(energy)[self.select_eg_out]
             traj.grad = np.copy(gradient)[self.select_eg_out]
-            traj.nac = np.copy(nac)[self.select_nac_out]
-            traj.soc = np.copy(soc)[self.select_soc_out]
+            if len(nac) > 0:
+                traj.nac = np.copy(nac)[self.select_nac_out]
+            else:
+                traj.nac = np.array([])
+            if len(soc) > 0:
+                traj.soc = np.copy(soc)[self.select_soc_out]
+            else:
+                traj.soc = np.array([])
             traj.err_energy = err_energy
             traj.err_grad = err_grad
             traj.err_nac = err_nac
