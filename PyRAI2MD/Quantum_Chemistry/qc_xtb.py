@@ -89,13 +89,13 @@ class Xtb:
         elif runtype == 'mm_high_mid_low':
             self.workdir = '%s_mm_l' % self.workdir
 
-        ## initialize runscript
-        self.runscript = """
+        ## initialize runscript - 先不写完整的，等 _write_xtb 后再写
+        self._runscript_header = """
 export XTB_PROJECT=%s
 export XTBHOME=%s
 export XTBPATH=$XTBHOME/share/xtb
 export OMP_NUM_THREADS=%s
-export OMP_STACKSIZE=%sMB
+export OMP_STACKSIZE=%sM
 export KMP_STACKSIZE=$OMP_STACKSIZE
 export OMP_MAX_ACTIVE_LEVELS=1
 export XTB_WORKDIR=%s
@@ -108,6 +108,10 @@ cd $XTB_WORKDIR
             self.mem,
             self.workdir,
         )
+
+        # 标记是否有输入文件内容，保存 addon 和 ext
+        self._has_input_content = False
+        self._has_charge = False
 
         if self.gfnver == -1:
             addon = '--gfnff'
@@ -139,8 +143,9 @@ cd $XTB_WORKDIR
         else:
             ext = 'xyz'
 
-        self.runscript += '$XTBHOME/bin/xtb %s --grad -I $XTB_WORKDIR/$XTB_PROJECT.inp $XTB_WORKDIR/$XTB_PROJECT.%s ' \
-                          '> $XTB_WORKDIR/$XTB_PROJECT.out\n ' % (addon, ext)
+        self._addon = addon
+        self._ext = ext
+        # 先不添加 xTB 命令，等 _write_xtb 后再决定
 
     def _setup_hpc(self):
         ## setup calculation using HPC
@@ -169,16 +174,27 @@ cd $XTB_WORKDIR
         os.system("rm %s/*.engrad > /dev/null 2>&1" % self.workdir)
         os.system("rm %s/*.out > /dev/null 2>&1" % self.workdir)
 
-        ## write run script
-        with open('%s/%s.sh' % (self.workdir, self.project), 'w') as out:
-            out.write(self.runscript)
-
         ## setup HPC settings
         if self.use_hpc == 1:
             self._setup_hpc()
 
         ## setup input according to dft_type
         self._write_xtb(x, q=q, cell=cell, pbc=pbc)
+
+        ## 现在写入完整的 runscript，包括 xTB 命令
+        ## 先写头部
+        with open('%s/%s.sh' % (self.workdir, self.project), 'w') as out:
+            out.write(self._runscript_header)
+
+        ## 根据输入文件是否有内容，决定是否使用 -I 参数
+        if self._has_input_content or self._has_charge:
+            xtb_cmd = '$XTBHOME/bin/xtb %s --grad -I $XTB_WORKDIR/$XTB_PROJECT.inp $XTB_WORKDIR/$XTB_PROJECT.%s > $XTB_WORKDIR/$XTB_PROJECT.out\n ' % (self._addon, self._ext)
+        else:
+            xtb_cmd = '$XTBHOME/bin/xtb %s --grad $XTB_WORKDIR/$XTB_PROJECT.%s > $XTB_WORKDIR/$XTB_PROJECT.out\n ' % (self._addon, self._ext)
+
+        ## 追加 xTB 命令
+        with open('%s/%s.sh' % (self.workdir, self.project), 'a') as out:
+            out.write(xtb_cmd)
 
     def _write_xtb(self, x, q=None, cell=None, pbc=None):
         ## Read input template from current directory
@@ -188,6 +204,10 @@ cd $XTB_WORKDIR
                 ld_input = template.read()
         else:
             ld_input = ''
+
+        ## 标记是否有输入内容
+        self._has_input_content = len(ld_input.strip()) > 0
+        self._has_charge = False
 
         ## write xtb input file
         with open('%s/%s.inp' % (self.workdir, self.project), 'w') as out:
@@ -199,6 +219,7 @@ cd $XTB_WORKDIR
             ld_input += '$embedding\ninput=%s.pc\n$end\n' % self.project
             with open('%s/%s.pc' % (self.workdir, self.project), 'w') as out:
                 out.write('%s\n%s' % (len(q), charge))
+            self._has_charge = True
 
         ## save xyz and input file
         xyz = '%s\n\n%s' % (len(x), print_coord(x))
@@ -318,7 +339,9 @@ cd $XTB_WORKDIR
 
         charges = self.charges
         self.charges = np.zeros((traj.natom, 4))
-        self.charges[traj.qmqm2_index] = np.concatenate((charges.reshape((-1, 1)), traj.qmqm2_coord), axis=1)
+        # 兼容性修复：当charges为空时跳过concatenate
+        if len(charges) > 0:
+            self.charges[traj.qmqm2_index] = np.concatenate((charges.reshape((-1, 1)), traj.qmqm2_coord), axis=1)
 
         ## project force and coupling
         # jacob = traj.Hcap_jacob
@@ -337,7 +360,7 @@ cd $XTB_WORKDIR
         pbc = traj.pbc
 
         if ignore_charges:
-            charge = np.zeross(0)
+            charge = np.zeros(0)
         else:
             charge = traj.qm2_charge
 
