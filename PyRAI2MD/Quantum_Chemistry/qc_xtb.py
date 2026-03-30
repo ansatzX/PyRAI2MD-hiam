@@ -173,6 +173,8 @@ cd $XTB_WORKDIR
 
         os.system("rm %s/*.engrad > /dev/null 2>&1" % self.workdir)
         os.system("rm %s/*.out > /dev/null 2>&1" % self.workdir)
+        os.system("rm %s/charges > /dev/null 2>&1" % self.workdir)
+        os.system("rm %s/gfnff_charges > /dev/null 2>&1" % self.workdir)
 
         ## setup HPC settings
         if self.use_hpc == 1:
@@ -249,6 +251,13 @@ cd $XTB_WORKDIR
         else:
             subprocess.run(['bash', '%s/%s.sh' % (self.workdir, self.project)])
         os.chdir(maindir)
+
+        ## check xtb output for error termination
+        if os.path.exists('%s/%s.out' % (self.workdir, self.project)):
+            with open('%s/%s.out' % (self.workdir, self.project), 'r') as log:
+                content = log.read()
+                if "Error termination" in content:
+                    sys.exit('\n  xTB Error: Calculation terminated abnormally. Check %s/%s.out for details.\n' % (self.workdir, self.project))
 
     def _read_data(self, natom):
         ## read xTB output and pack data
