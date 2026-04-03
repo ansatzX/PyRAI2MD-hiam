@@ -100,6 +100,8 @@ export KMP_STACKSIZE=$OMP_STACKSIZE
 export OMP_MAX_ACTIVE_LEVELS=1
 export XTB_WORKDIR=%s
 
+ulimit -s unlimited # without this xtb can not run 
+
 cd $XTB_WORKDIR
 """ % (
             self.project,
