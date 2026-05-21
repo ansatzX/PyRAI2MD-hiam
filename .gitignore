@@ -153,3 +153,13 @@ temp/
 *.slurm
 *.make
 *.sh
+
+# Generated trajectory outputs
+examples/gaff_runs/
+examples/gaff_timing/
+examples/slurm_qmmm_ensemble_500/*/logs/
+examples/slurm_qmmm_ensemble_500/*/results/
+examples/slurm_qmmm_ensemble_500/*/scratch/
+examples/slurm_qmmm_ensemble_500_planck/*/logs/
+examples/slurm_qmmm_ensemble_500_planck/*/results/
+examples/slurm_qmmm_ensemble_500_planck/*/scratch/

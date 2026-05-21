@@ -1,0 +1,86 @@
+&CONTROL
+title cothagg
+jobtype md
+qm nn xtb xtb
+ml_ncpu 16
+qc_ncpu 16
+maxenergy 0.03  
+minenergy 0.03
+maxgrad 0.08
+mingrad 0.08
+
+
+&MOLECULE
+ci 3
+spin 0
+coupling 1 2,2 3
+shape ellipsoid
+highlevel 1-28
+midlevel 29-392
+embedding 0
+cavity 18.343
+factor 40 
+center 12 13 16 17 4 5 8 9
+
+&xtb
+xtb  /curie-home/ansatz/.conda/envs/ljb 
+xtb_nproc 16
+gfnver 0 
+mem 128000
+
+&MD
+reset 1
+resetstep 4000
+randvelo 0
+temp 298.15
+step 40000
+size 20.67
+root 2
+thermo nvt
+direct 1
+buffer 1
+sfhp  fssh
+nactype ktdc
+gap 1.0
+
+
+&NN
+modeldir NN-coth #need to modify 
+train_data  data.json   #need to modify
+nn_eg_type 2
+
+
+&EG
+invd_index cothh  #need to modify
+depth 3
+nn_size 500
+batch_size 64
+loss_weights 1 1
+use_reg_activ l2
+use_reg_weight l2
+use_reg_bias l2
+reg_l2 1e-7
+epo 600     #need to modify
+epostep 10
+learning_rate 1e-3
+learning_rate_step 1e-3 1e-4 1e-5
+epoch_step_reduction 350 200 50
+
+&EG2
+invd_index cothh   #need to modify
+depth 3
+nn_size 700
+batch_size 64
+loss_weights 1 1
+use_reg_activ l2
+use_reg_weight l2
+use_reg_bias l2
+reg_l2 1e-7
+epo 600     #need to modify
+epostep 10
+learning_rate 1e-3
+learning_rate_step 1e-3 1e-4 1e-5
+epoch_step_reduction 350 200 50
+
+
+

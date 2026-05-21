@@ -1,0 +1,85 @@
+&CONTROL
+title hpsagg
+jobtype md
+qm nn xtb xtb
+ml_ncpu 1
+qc_ncpu 1
+maxenergy 0.05
+minenergy 0.05
+maxgrad 0.15
+mingrad 0.15
+
+
+gl_seed __TRAJ_SEED__
+&MOLECULE
+ci 3
+spin 0
+coupling 1 2,2 3
+shape ellipsoid
+cavity 21.675
+factor 40
+highlevel 1-71
+midlevel 72-852
+center 1 2 14 26 38
+
+&xtb
+xtb  /curie-home/ansatz/.conda/envs/ljb
+xtb_nproc 1
+gfnver 0 
+mem 4000
+
+&MD
+reset 1
+resetstep 4000
+randvelo 0
+temp 298.15
+step 40000
+size 20.67
+root 2
+thermo nvt
+direct 1
+buffer 1
+sfhp  fssh
+nactype ktdc
+gap 2.05
+silent 1
+verbose 0
+
+
+&NN
+modeldir NN-hps
+train_data data.json
+nn_eg_type 2
+
+&EG
+invd_index hpss
+depth 3
+nn_size 400
+batch_size 64
+loss_weights 1 1
+use_reg_activ l2
+use_reg_weight l2
+use_reg_bias l2
+reg_l2 1e-8
+epo 600     #need to modify
+epostep 10
+learning_rate 1e-3
+learning_rate_step 1e-3 1e-4 1e-5
+epoch_step_reduction 300 200 100
+
+
+&EG2
+invd_index hpss
+depth 4
+nn_size 500
+batch_size 64
+loss_weights 1 1
+use_reg_activ l2
+use_reg_weight l2
+use_reg_bias l2
+reg_l2 1e-8
+epo 600     #need to modify
+epostep 10
+learning_rate 1e-3
+learning_rate_step 1e-3 1e-4 1e-5
+epoch_step_reduction 300 200 100

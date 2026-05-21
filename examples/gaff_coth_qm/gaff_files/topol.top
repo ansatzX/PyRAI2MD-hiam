@@ -1,0 +1,7 @@
+#include "COTH_GMX.itp"
+
+[ system ]
+COTH aggregate
+
+[ molecules ]
+COTH 1

@@ -1,0 +1,5 @@
+source leaprc.gaff2
+COTH = loadmol2 COTH.mol2
+loadamberparams COTH.frcmod
+saveamberparm COTH COTH.prmtop COTH.inpcrd
+quit
